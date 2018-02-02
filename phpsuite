@@ -1,0 +1,7 @@
+#!/bin/bash
+if [[ $1 == "help" || $2 == "help" ]]
+then
+    echo "display help"
+else
+    echo $*
+fi
