@@ -65,22 +65,19 @@ if not "%CMD%" == "--" (
     goto displayHelp
 )
 
+:: Strip the php version and -- command from the args list
+set ARGS=%*
+set ARGS=%ARGS:~7%
+
 :: When the first argument (after --) is a valid filename, prepend the
 :: arguments list with php so it's executed with php cli
-set ARGS=
 if not "%1" == "" (
     if exist "%cd%\%1" (
-        set ARGS=php
+        set ARGS=php %ARGS%
     )
+
+    rem if %1 starts with . args[] = php
 )
-
-:: Add all remaining arguments to the list...
-:parseArgs
-set ARGS=%ARGS% %1
-shift
-
-if "%1" == "" ( goto parseArgsDone ) else ( goto parseArgs )
-:parseArgsDone
 
 :: Figure out in wich folder and drive we're currently working.
 :: These will be used to mount the complete drive in docker
@@ -92,11 +89,11 @@ if not "%CWD_PATH%" == "" (
 )
 
 :: Create the actual docker run command options
-set OPTIONS=--rm -it -p 2375
-set OPTIONS=%OPTIONS% --name %PHP%
-set OPTIONS=%OPTIONS% --volume %CWD_DRIVE%:\:/mnt/%CWD_DRIVE%
-set OPTIONS=%OPTIONS% --volume %SUITE_DIR%.cache\%PHP%\composer:/root/.composer/cache
-set OPTIONS=%OPTIONS% --workdir /mnt/%CWD_DRIVE%/%CWD_PATH%
+set OPTIONS=--rm -it -p 2375 ^
+            --name %PHP% ^
+            --volume %CWD_DRIVE%:\:/mnt/%CWD_DRIVE% ^
+            --volume %SUITE_DIR%.cache\%PHP%\composer:/root/.composer/cache ^
+            --workdir /mnt/%CWD_DRIVE%/%CWD_PATH%
 
 if %DEBUG%==1 (
     echo.
