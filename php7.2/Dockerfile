@@ -1,4 +1,4 @@
-FROM php:7.2.2-cli
+FROM php:7.2.3-cli
 LABEL vendor="phpsuite" version="0.1"
 
 ENV COMPOSER_ALLOW_SUPERUSER=1
