@@ -3,6 +3,7 @@
 set PHP=0
 set CMD="help"
 set DEBUG=0
+set DEBUG_CMD=
 set VERSIONS="5.6" "7.0" "7.1" "7.2"
 
 :: Display help and usage, skip the rest of the script
@@ -55,7 +56,8 @@ shift
 
 :: Build the image from where we can start a container
 if /I "%CMD%" == "build" (
-    docker build -t %DOCKER_IMG% %DOCKER_DIR% --pull
+    set DEBUG_CMD=docker build -t %DOCKER_IMG% "%DOCKER_DIR%"
+    docker build -t %DOCKER_IMG% "%DOCKER_DIR%"
     goto end
 )
 
@@ -91,24 +93,16 @@ if not "%CWD_PATH%" == "" (
 :: Create the actual docker run command options
 set OPTIONS=--rm -it -p 2375 ^
             --name %PHP% ^
-            --volume %CWD_DRIVE%:\:/mnt/%CWD_DRIVE% ^
-            --volume %SUITE_DIR%.cache\%PHP%\composer:/root/.composer/cache ^
-            --workdir /mnt/%CWD_DRIVE%/%CWD_PATH%
+            --volume "%CWD_DRIVE%:\:/mnt/%CWD_DRIVE%" ^
+            --volume "%SUITE_DIR%.cache\%PHP%\composer:/root/.composer/cache" ^
+            --workdir "/mnt/%CWD_DRIVE%/%CWD_PATH%"
 
-if %DEBUG%==1 (
-    echo.
-    echo Dockerfile:  %DOCKER_DIR%\Dockerfile
-    echo Image name:  %DOCKER_IMG%
-    echo Options:     %OPTIONS%
-    echo Command:     %ARGS%
-    echo.
-)
-
+set DEBUG_CMD=docker run %OPTIONS% %DOCKER_IMG% %ARGS%
 docker run %OPTIONS% %DOCKER_IMG% %ARGS%
 goto end
 
 :displayHelp
-echo phpsuite 0.1
+echo phpsuite 0.1.1
 echo.
 echo Usage:
 echo   phpsuite [version] [action] [args]
@@ -129,4 +123,13 @@ echo   phpsuite 7.1 -- composer -v
 echo.
 
 :end
+if %DEBUG%==1 (
+    echo.
+    echo Dockerfile:  %DOCKER_DIR%\Dockerfile
+    echo Image name:  %DOCKER_IMG%
+    echo Options:     %OPTIONS%
+    echo Command:     %DEBUG_CMD%
+    echo.
+)
+
 exit /b
